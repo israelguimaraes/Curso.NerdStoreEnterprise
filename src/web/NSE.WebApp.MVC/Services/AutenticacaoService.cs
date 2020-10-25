@@ -1,7 +1,5 @@
 ﻿using NSE.WebApp.MVC.Models;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NSE.WebApp.MVC.Services
@@ -17,50 +15,36 @@ namespace NSE.WebApp.MVC.Services
 
         public async Task<UsuarioRespostaLogin> Login(UsuarioLogin usuarioLogin)
         {
-            var content = new StringContent(
-                JsonSerializer.Serialize(usuarioLogin),
-                Encoding.UTF8,
-                "application/json");
+            var content = ObterConteudo(usuarioLogin);
 
             var response = await _httpClient.PostAsync("https://localhost:44369/api/identidade/autenticar", content);
-
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
             if (!TratarErrosResponse(response))
             {
                 return new UsuarioRespostaLogin
                 {
-                    ResponseResult = JsonSerializer.Deserialize<ResponseResult>(
-                        await response.Content.ReadAsStringAsync(),
-                        options)
+                    ResponseResult = await DeserializarObjetoResponse<ResponseResult>(response)
                 };
             }
 
-            return JsonSerializer.Deserialize<UsuarioRespostaLogin>(await response.Content.ReadAsStringAsync(), options);
+            return await DeserializarObjetoResponse<UsuarioRespostaLogin>(response);
         }
 
         public async Task<UsuarioRespostaLogin> Registro(UsuarioRegistro usuarioRegistro)
         {
-            var content = new StringContent(
-                JsonSerializer.Serialize(usuarioRegistro),
-                Encoding.UTF8,
-                "application/json");
+            var content = ObterConteudo(usuarioRegistro);
 
             var response = await _httpClient.PostAsync("https://localhost:44369/api/identidade/nova-conta", content);
-
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
             if (!TratarErrosResponse(response))
             {
                 return new UsuarioRespostaLogin
                 {
-                    ResponseResult = JsonSerializer.Deserialize<ResponseResult>(
-                        await response.Content.ReadAsStringAsync(),
-                        options)
+                    ResponseResult = await DeserializarObjetoResponse<ResponseResult>(response)
                 };
             }
 
-            return JsonSerializer.Deserialize<UsuarioRespostaLogin>(await response.Content.ReadAsStringAsync());
+            return await DeserializarObjetoResponse<UsuarioRespostaLogin>(response);
         }
     }
 }
