@@ -8,19 +8,30 @@ namespace NSE.WebApp.MVC
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public IConfigurationRoot Configuration { get; }
 
-        public IConfiguration Configuration { get; }
+        public Startup(IHostingEnvironment hostingEnvironment)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(hostingEnvironment.ContentRootPath)
+                .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile($"appsettings.{hostingEnvironment.EnvironmentName}.json", true, true)
+                .AddEnvironmentVariables();
+
+            if (hostingEnvironment.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+
+            Configuration = builder.Build();
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddIdentityConfiguration();
 
-            services.AddMvcConfiguration();
+            services.AddMvcConfiguration(Configuration);
 
             services.RegisterServices();
         }
